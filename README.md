@@ -1,7 +1,21 @@
+# Instructions
+
+- Build this docker image
+- Run `bash` as the command with an iteractive tty to get into the image:
+
+```
+docker run --rm -it ${whatever-you-named-the-image} /bin/bash
+```
+
+- The data is in the directory `/root/data` on said image
+- Create a Pull Request with your code for review
+
+> You're free to use whatever language you want just as long as you include the instructions on how to run your code. (Bonus points if you modify the `Dockerfile` instead)
+
 
 # Questions
 
-## what's the average number of fields across all the `.csv`` files?
+## what's the average number of fields across all the `.csv` files?
 
 output should be a simple number
 
@@ -26,7 +40,7 @@ word,45
 ...
 ```
 
-## what's the total number or rows of data across the dataset
+## what's the total number or rows for the `.csv` files?
 
 output should be a simple number
 
