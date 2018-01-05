@@ -10,7 +10,7 @@ docker run --rm -it ${whatever-you-named-the-image} /bin/bash
 - The data is in the directory `/root/data` on said image
 - Create a Pull Request with your code for review
 
-> You're free to use whatever language you want just as long as you include the instructions on how to run your code. (Bonus points if you modify the `Dockerfile` instead)
+**You're free to use whatever language you want just as long as you include the instructions on how to run your code. (Bonus points if you modify the `Dockerfile` instead)**
 
 
 # Questions
