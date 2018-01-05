@@ -1,7 +1,7 @@
 
 # Questions
 
-## what's the average number of fields each dataset has?
+## what's the average number of fields across all the `.csv`` files?
 
 output should be a simple number
 
@@ -11,7 +11,7 @@ _sample output_
 5
 ```
 
-## create a csv that shows the word count of every value of every dataset
+## create a csv file that shows the word count of every value of every dataset
 
 output should be a csv file that has a header row with fields `value` and
 `count` and one entry for every value found:
