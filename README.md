@@ -25,7 +25,7 @@ _sample output_
 5
 ```
 
-## create a csv file that shows the word count of every value of every dataset
+## create a csv file that shows the word count of every value of every dataset (dataset being a `.csv` file)
 
 output should be a csv file that has a header row with fields `value` and
 `count` and one entry for every value found:
