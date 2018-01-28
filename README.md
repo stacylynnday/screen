@@ -10,7 +10,9 @@ docker run --rm -it ${whatever-you-named-the-image} /bin/bash
 - The data is in the directory `/root/data` on said image
 - Create a Pull Request with your code for review
 
-**You're free to use whatever language you want just as long as you include the instructions on how to run your code. (Bonus points if you modify the `Dockerfile` instead)**
+> **You're free to use whatever language you want just as long as you include the instructions on how to run your code. (Bonus points if you modify the `Dockerfile` instead)**
+>
+> Note that you **do not** have to use a _Big Data_ stack like Hadoop or Spark. If you do use those, provide either a [docker-swarm](https://docs.docker.com/compose/) or [kubernetes](https://kubernetes.io/) configuration file(s) in your Pull Request that will setup the cluster or else we won't be able to run the code
 
 
 # Questions
