@@ -1,9 +1,23 @@
-FROM debian:jessie
+# Use an official Python runtime as a parent image
+FROM python
 
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    jq
+# Set the working directory to /app
+WORKDIR /app
 
-WORKDIR /root
-RUN ["/bin/bash", "-c", "mkdir data && cd data && while read i; do git clone $i; done < <(curl -s https://api.github.com/orgs/datasets/repos?per_page=100 | jq -r '.[].clone_url')"]
+# Copy the current directory contents into the conainer at /app
+COPY . /app
+
+#RUN pip install pandas
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Define environment variable
+ENV NAME iHeart
+
+# Run analyzeCSVFiles.py when the container launches
+CMD ["python", "analyzeCSVFiles.py"]
+#RUN ["python", "analyzeCSVFiles.py"]
