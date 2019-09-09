@@ -1,20 +1,51 @@
-# Get the list of all csv files in root/data dir and process
-# process csv filelist to  1) get avg num columns per file, 2)create a csv file off ALL values and counts in all files,
-# and 3) get the total number of lines in all files
+# Stacy Day September 2019
+# iHeartMedia screen (see Andres Lowres github account)
+# Get the list of all csv files in /app/data dir 
+# Process csv filelist to:  
+#
+# 1) Get the average number of fields across all the .csv files 
+# 2) Create a csv file that shows the word count of every value
+#    of every dataset (dataset being a .csv file)
+# 3) Get the total number of rows for all the .csv files
+
 
 import os
 import subprocess
-import sys
 import logging
 import traceback
 import csv
-#from collections import Counter
-#import pandas as pd
+import chardet
+import datetime
 
-# counts the number of lines in a file
-def line_count(file):
-    return int(subprocess.check_output('wc -l {}'.format(file), shell=True).split()[0])
 
+## get datasets from git
+##bashcommand = "/bin/bash", "-c", "mkdir data && cd data && while read i; do git clone $i; done < <(curl -s https://api.github.com/orgs/datasets/repos?per_page=100 | jq -r '.[].clone_url')"
+##subprocess.check_call(bashcommand, shell=True)
+
+
+# For parts 1), 2), and 3)
+# creates the list of csv files
+def createFileList(path, extension):
+    filelist = []
+    for root, dirs_list, files_list in os.walk(path):
+        for file_name in files_list:
+            if os.path.splitext(file_name)[-1] == extension:
+                file_name_path = os.path.join(root, file_name)
+                #print(file_name)
+                #print(file_name_path)   # This is the full path of the filter file
+                filelist.append(file_name_path)
+    return filelist
+
+# for part 1)
+# calculate average number of fields
+def calcAvgNumFields(numbercolumns, filecount):
+    if (file_count != 0):
+        avg_num_fields = int(round(num_col/file_count))
+    else:
+        avg_num_fields = 0
+    return avg_num_fields
+
+# helper for part 2)
 # set key or append value to new dictionary object:
 def add_key_to_dict(dict, key):
     if key in dict:
@@ -22,58 +53,90 @@ def add_key_to_dict(dict, key):
     else:
         dict[key] = 1
 
-# Get the list of all csv files in root/data dir and process
-# This is the path where you want to search
-path ='/app/data'
+# for part 2)
+# write dict to a csv file
+def writeDictToFile(filename):
+    #with open('value_counts.csv', 'w') as csv_file:
+    with open(filename, 'w') as csv_file:
+        # writer 
+        writer = csv.writer(csv_file)
 
+        # this is the header
+        field_names = ['value', 'count']
+
+        writer.writerow(field_names)
+
+        # write each value(key in this case)  and counts(value in this case)    
+        for key, value in dict.items():    
+            list=[key,value]
+            writer.writerow(list) 
+
+# helper for part 3)
+# counts the number of lines in a file
+def line_count(file):
+    return int(subprocess.check_output('wc -l {}'.format(file), shell=True).split()[0])
+
+
+#
+# Get the list of all csv files in /app/data dir and process
+#
+
+start_time = datetime.datetime.now()
+print("Creating list of csv files in /app/data dir")
+
+# this is the path where you want to search
+path ='/app/data'
 # this is the extension we want to detect
 extension = '.csv'
 
-# filelist will store all csv files
-filelist = []
+csv_file_list = createFileList(path, extension)
+#print(csv_file_list)
+#print(len(csv_file_list))
 
-for root, dirs_list, files_list in os.walk(path):
-    for file_name in files_list:
-        if os.path.splitext(file_name)[-1] == extension:
-            file_name_path = os.path.join(root, file_name)
-            #print(file_name)
-            #print(file_name_path)   # This is the full path of the filter file
-            filelist.append(file_name_path)
+#
+# process csv filelist for 1), 2) and 3) listed at beginning of script 
+#
 
-# process csv filelist to  1) get avg num columns per file, 2)create a csv file off ALL values and counts in all files,
-# and 3) get the total number of lines in all files
- 
-filecount = 0
-numcol = 0
-totalLines = 0
+print("Processing .csv files in list")
 
-#print(filelist)
-#print(len(filelist))
-
+# create vars we need 
+file_count = 0
+num_col = 0
+total_lines = 0
 # put bad/corrupt files here
-badfilelist = []
+bad_file_list = []
+# this dict holds value and count
 dict = {}
 
-for file in filelist:
+# for each file in list
+for file in csv_file_list:
+    # check that file is a file and is not empty
     if (os.path.isfile(file) and os.stat(file).st_size != 0):
-        #print("processing file: ", file)
-        with open(file) as csvfile:
+        print("Processing file: ", file, "at time: ", datetime.datetime.now().time())
+
+        # get encoding by opening as binary
+        with open(file, 'rb') as f:
+            rawdata = f.read()
+            result = chardet.detect(rawdata)
+            charenc = result['encoding']
+
+        # read each cvs file and process
+        with open(file, 'r', encoding=charenc, newline='') as csvfile:
             try: 
-                #reader = csv.reader(csvfile)
+                # get dialect 
+                dialect = csv.Sniffer().sniff(csvfile.read())
+                #print("charenc= ", charenc, "delimiter= ", dialect.delimiter) 
+
+                csvfile.seek(0)
+                reader = csv.reader(csvfile, dialect)
                 
-                if (file != "/app/data/geo-nuts-administrative-boundaries/data/NUTS_2013_60M_SH/data/NUTS_AT_2013.csv"):
-                    reader = csv.reader(csvfile)
-                else:
-                    #trying to read this one file!
-                    #print("this is the bad file")
-                    open(file, encoding = "ISO-8859-1")
-                    #reader = csv.reader(csvfile, encoding = "ISO-8859-1")
-                    reader = csv.reader(csvfile)
-
-                numcol += len(next(reader))
-                filecount += 1
-                totalLines += line_count(file)
-
+                # do calculations
+                num_col += len(next(reader))
+                file_count += 1
+                total_lines += line_count(file)
+                
+                # add each column value (here called 'key') to dict of values and counts 
+                # (while keeping track of counts)
                 for row in reader:
                     for key in row:
                         add_key_to_dict(dict, key)
@@ -81,32 +144,39 @@ for file in filelist:
             except BaseException as error:
                 print(file, "adding to list of bad files")
                 logging.error(traceback.format_exc())
-                badfilelist.append(file)
+                bad_file_list.append(file)
                 continue
 
-avgnumfields = int(round(numcol/filecount))
+# create csv file of all column values in all csv files
+# and number of times value has appeared in all csv files
+writeDictToFile('value_counts.csv')
 
-# write dict to a csv file
-with open('valuecounts.csv', 'w') as csvfile:
-    fieldnames = ['value', 'count']
-   
-    writer = csv.writer(csvfile)
-    writer.writerow(fieldnames)
-    
-    for key, value in dict.items():    
-        list=[key,value]
-        writer.writerow(list) 
+# calculate average number of fields
+avg_num_fields = calcAvgNumFields(num_col, file_count)
 
+end_time = datetime.datetime.now()
 
-
-print("this is the list of files not used for valuecounts.csv file bc they couldn't be read")
-print(badfilelist)
+total_time = end_time - start_time
+print("Done processing")
+print("Total time:", total_time)
 
 # print out answers
-print("Average number of fields is:")
-print(avgnumfields)
+print()
+print()
+print("This is the list of files not used for value_counts.csv file bc they couldn't be read: ", bad_file_list)
+print()
 
-print("csv file of value, count: valuecounts.csv" )
+# print out answers
+print("1.  Average number of fields across all the .csv files is:" , avg_num_fields)
+print()
 
-print("Total number of lines in all csv files:")
-print(totalLines)
+print("2. The csv file that shows the word count of every value of every dataset")
+print("   (dataset being a .csv file) is: value_counts.csv")
+print("        To copy this file to local machine:")
+print("        type \'docker ps -a\' to get container_id")
+print("        type \'docker cp <container_id>:/app/data/value_counts.csv .\'")
+print()
+
+print("3. The total number of rows for all the .csv files is: ", total_lines)
+print()
+print()
