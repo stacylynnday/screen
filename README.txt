@@ -1,4 +1,4 @@
-Run Docker image: "docker run -p stacylynn333/iheartmediachallenge:latest"
+Run Docker image: "docker run stacylynn333/iheartmediachallenge"
 
 Output is printed to bash shell (for questions 1 and 3)
 
