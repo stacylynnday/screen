@@ -39,22 +39,19 @@ def createFileList(path, extension):
 # for part 1)
 # calculate average number of fields
 def calcAvgNumFields(numbercolumns, filecount):
-    if (file_count != 0):
-        avg_num_fields = int(round(num_col/file_count))
-    else:
-        avg_num_fields = 0
+    avg_num_fields = num_col/file_count
     return avg_num_fields
 
 # helper for part 2)
 # set key or append value to new dictionary object:
-def add_key_to_dict(dict, key):
-    if key in dict:
-        dict[key] = dict.get(key) + 1
+def add_key_to_dict(values_dict, key):
+    if key in values_dict:
+        values_dict[key] = values_dict.get(key) + 1
     else:
-        dict[key] = 1
+        values_dict[key] = 1
 
 # for part 2)
-# write dict to a csv file
+# write values_dict to a csv file
 def writeDictToFile(filename):
     #with open('value_counts.csv', 'w') as csv_file:
     with open(filename, 'w') as csv_file:
@@ -67,14 +64,14 @@ def writeDictToFile(filename):
         writer.writerow(field_names)
 
         # write each value(key in this case)  and counts(value in this case)    
-        for key, value in dict.items():    
-            list=[key,value]
-            writer.writerow(list) 
+        for key, value in values_dict.items():    
+            values_list=[key,value]
+            writer.writerow(values_list) 
 
 # helper for part 3)
 # counts the number of lines in a file
-def line_count(file):
-    return int(subprocess.check_output('wc -l {}'.format(file), shell=True).split()[0])
+def line_count(csv_file):
+    return int(subprocess.check_output('wc -l {}'.format(csv_file), shell=True).split()[0])
 
 
 #
@@ -106,22 +103,22 @@ total_lines = 0
 # put bad/corrupt files here
 bad_file_list = []
 # this dict holds value and count
-dict = {}
+values_dict = {}
 
 # for each file in list
-for file in csv_file_list:
-    # check that file is a file and is not empty
-    if (os.path.isfile(file) and os.stat(file).st_size != 0):
-        print("Processing file: ", file, "at time: ", datetime.datetime.now().time())
+for csv_file in csv_file_list:
+    # check that csv_file is a file and is not empty
+    if (os.path.isfile(csv_file) and os.stat(csv_file).st_size != 0):
+        print("Processing csv file: ", csv_file, "at time: ", datetime.datetime.now().time())
 
         # get encoding by opening as binary
-        with open(file, 'rb') as f:
+        with open(csv_file, 'rb') as f:
             rawdata = f.read()
             result = chardet.detect(rawdata)
             charenc = result['encoding']
 
         # read each cvs file and process
-        with open(file, 'r', encoding=charenc, newline='') as csvfile:
+        with open(csv_file, 'r', encoding=charenc, newline='') as csvfile:
             try: 
                 # get dialect 
                 dialect = csv.Sniffer().sniff(csvfile.read())
@@ -139,12 +136,12 @@ for file in csv_file_list:
                 # (while keeping track of counts)
                 for row in reader:
                     for key in row:
-                        add_key_to_dict(dict, key)
+                        add_key_to_dict(values_dict, key)
 
             except BaseException as error:
-                print(file, "adding to list of bad files")
+                print(csv_file, "adding to list of bad files")
                 logging.error(traceback.format_exc())
-                bad_file_list.append(file)
+                bad_file_list.append(csv_file)
                 continue
 
 # create csv file of all column values in all csv files
